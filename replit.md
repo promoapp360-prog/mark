@@ -10,6 +10,7 @@ MARK e-commerce imported from https://github.com/promoapp360-prog/mark.git. Pres
 - Admin login is disabled until `ADMIN_PASSWORD` is configured through Secrets. Never restore the original public default password.
 - Payments, shipping, legal content and durable production storage need configuration and review before accepting real orders. Do not publish this SQLite import as a production store without addressing durable storage.
 - Keep the existing customer's accounts and providers isolated; do not migrate storage or authentication as part of a simple import.
+- Product previews use the unbranded base images embedded in the customer's REAL FOOTBALL PDF; accessory shapes follow pages 4–5 of the MARK 2026 catalog. Do not turn other customers' logos from the supplied proofs into default storefront templates. Preview-only changes must not alter print measurements or production exports.
 
 ## Run & Operate
 

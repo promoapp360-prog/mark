@@ -29,7 +29,8 @@
   </div>
 
   <h2 class="section-title" id="catalogo">Prodotti</h2>
-  <p class="muted">Prezzi IVA esclusa. Il contributo impianto stampa si paga solo sulla prima stampa di ogni grafica.</p>
+  <p class="muted">Il prodotto prima della tua firma. Scegli il supporto, poi crea la tua personalizzazione.</p>
+  <p class="catalog-note">Basi originali MARK per bustine e bicchieri. Ricostruzioni illustrative per gli accessori, ispirate al catalogo 2026. Prezzi IVA esclusa.</p>
   <div id="catalog"></div>
 </div>
 
@@ -37,13 +38,14 @@
 <script src="/js/qr.js"></script>
 <script src="/js/icons.js"></script>
 <script src="/js/render.js"></script>
+<script src="/js/product-visuals.js"></script>
 <script>
 (async () => {
   Mark.header('catalogo');
   const ref = new URLSearchParams(location.search).get('ref'); if (ref) location.replace(`/r/${encodeURIComponent(ref)}`);
   const [cfg, products] = await Promise.all([Mark.api('/api/config'), Mark.api('/api/products')]);
+  await MarkProductVisuals.ready;
   Mark.footer(cfg.shop);
-  const empty = { mode: 'mono', ink: '#2D2926', sides: {} };
   const demo = { mode: 'mono', ink: '#2D2926', sides: { front: { objects: [
     { type: 'text', text: 'Zucchero', font: 'Montserrat', sizePt: 4.5, x: 35, y: 6.2 },
     { type: 'icon', icon: 'cup', x: 35, y: 15, w: 9, h: 9 },
@@ -52,7 +54,8 @@
   await Mark.loadFonts(['Montserrat', 'Playfair Display', 'Cormorant Garamond']);
   const hero = Mark.qs('#heroMock'); const sachet = products.find((p) => p.slug === 'bustine-extrafine');
   const drawHero = () => sachet && MarkRender.mockup(hero, demo, 'front', sachet.profile, { tilt: -0.08 });
-  MarkRender.setOnAsset(drawHero); drawHero();
+  const redraws = [drawHero];
+  MarkRender.setOnAsset(() => redraws.forEach((draw) => draw())); drawHero();
 
   const groups = {}; products.forEach((p) => { (groups[p.category] = groups[p.category] || []).push(p); });
   const el = Mark.qs('#catalog');
@@ -61,14 +64,32 @@
     for (const p of list) {
       const d = document.createElement('div'); d.className = 'prod';
       const minTier = p.tiers.reduce((a, t) => (t.min_qty < a.min_qty ? t : a), p.tiers[0] || {});
-      d.innerHTML = `${p.customizable ? '<canvas width="640" height="480"></canvas>' : '<div class="ph"></div>'}
+      const model = /trasparente/.test(p.slug) ? 'Acrilico trasparente' : /silver/.test(p.slug) ? 'Latta · finitura silver' : /latta/.test(p.slug) ? 'Latta verniciata' : /cube/.test(p.slug) ? 'Modello Cube' : /bicchieri/.test(p.slug) ? 'Carta riciclabile' : /bustine/.test(p.slug) ? 'Formato 70 × 45 mm' : /coperchi/.test(p.slug) ? 'Coperchi neutri' : 'Confezione illustrativa';
+      d.innerHTML = `<div class="product-stage"><span class="product-badge">${p.customizable ? 'Da personalizzare' : 'Prodotto neutro'}</span><canvas width="960" height="720" role="img" aria-label="${Mark.esc(p.name)} — ${model}"></canvas><span class="product-material">${model}</span></div>
         <div class="b"><h4>${Mark.esc(p.name)}</h4><div class="muted small">${Mark.esc(p.unit_detail || '')}</div>
+        <div class="product-swatches"></div>
         <div class="price">da ${Mark.money(p.from_price)} <span class="muted small">/ ${Mark.esc(p.unit_label)}</span></div>
         <div class="muted small">Minimo ${minTier.min_qty || 1} ${Mark.esc(p.unit_label)}</div>
-        ${p.customizable ? `<a class="btn" href="/editor.html?p=${encodeURIComponent(p.slug)}">Personalizza</a>`
+        ${p.customizable ? `<a class="btn" href="/editor.html?p=${encodeURIComponent(p.slug)}">Personalizza <span aria-hidden="true">→</span></a>`
           : `<div class="row"><input type="number" min="${minTier.min_qty || 1}" step="${p.qty_step}" value="${minTier.min_qty || 1}" style="width:90px"><button class="grow">Aggiungi al carrello</button></div>`}</div>`;
-      if (p.customizable) { const cv = d.querySelector('canvas'); const variant = (p.variants || [])[0]; MarkRender.mockup(cv, empty, 'front', p.profile, { variantColor: variant && variant.color, transparent: /trasparente/.test(p.slug) }); }
-      else d.querySelector('button').onclick = () => {
+      const cv = d.querySelector('canvas');
+      let variant = (p.variants || [])[0];
+      const drawProduct = () => MarkProductVisuals.catalog(cv, p, variant);
+      redraws.push(drawProduct); drawProduct();
+      for (const v of p.variants || []) {
+        const button = document.createElement('button');
+        button.className = 'product-swatch'; button.type = 'button';
+        button.style.setProperty('--swatch', v.color); button.title = v.label;
+        button.setAttribute('aria-label', `Visualizza ${p.name}: ${v.label}`);
+        button.setAttribute('aria-pressed', String(v === variant));
+        button.onclick = () => {
+          variant = v;
+          d.querySelectorAll('.product-swatch').forEach((b) => b.setAttribute('aria-pressed', String(b === button)));
+          drawProduct();
+        };
+        d.querySelector('.product-swatches').append(button);
+      }
+      if (!p.customizable) d.querySelector('.b .row button').onclick = () => {
         const qty = Number(d.querySelector('input').value);
         Mark.cart.add({ productSlug: p.slug, option: p.print_options[0].code, qty, name: p.name }); Mark.toast('Aggiunto al carrello');
       };

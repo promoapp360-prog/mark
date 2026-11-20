@@ -4,6 +4,7 @@
 (async () => {
   const { qs, qsa, esc, api, money, toast } = Mark;
   Mark.header();
+  await MarkProductVisuals.ready;
   const params = new URLSearchParams(location.search);
   const slug = params.get('p') || 'bustine-extrafine';
   const [cfg, product] = await Promise.all([api('/api/config'), api(`/api/products/${encodeURIComponent(slug)}`)]).catch((e) => { toast(e.message, 'err'); throw e; });
@@ -81,7 +82,7 @@
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, cv.width, cv.height);
     const r = stage.getBoundingClientRect();
     if (view === 'mock' || view === 'compare') {
-      const off = document.createElement('canvas'); const opt = { variantColor: variant && variant.color, transparent: /trasparente/.test(slug) };
+      const off = document.createElement('canvas'); const opt = { productSlug: slug, variantColor: variant && variant.color, transparent: /trasparente/.test(slug) };
       if (view === 'mock') { off.width = r.width * dpr; off.height = r.height * dpr; MarkRender.mockup(off, design, side, P, opt); ctx.drawImage(off, 0, 0, r.width, r.height); }
       else {
         const neutral = withFixed({ mode: design.mode, ink: design.ink, sides: {} });
@@ -515,7 +516,7 @@
     selId = null; draw(); runChecks();
     const m = qs('#confirmModal'); m.hidden = false;
     const v = qs('#finalViews'); v.innerHTML = '';
-    const opt = { variantColor: variant && variant.color, transparent: /trasparente/.test(slug) };
+    const opt = { productSlug: slug, variantColor: variant && variant.color, transparent: /trasparente/.test(slug) };
     for (const s of P.sides) {
       if (s.optional && !((design.sides[s.code] || {}).objects || []).some((o) => !o.fixed)) continue;
       const box = document.createElement('div');
@@ -548,7 +549,7 @@
         const has = ((design.sides[s.code] || {}).objects || []).some((o) => !o.fixed && !o.hidden);
         if (s.optional && !has) continue;
         files[`preview_${s.code}`] = MarkRender.flatPreview(design, s.code, P, 1000, variantPaper()).toDataURL('image/png');
-        const mk = document.createElement('canvas'); mk.width = 1000; mk.height = 700; MarkRender.mockup(mk, design, s.code, P, { variantColor: variant && variant.color, transparent: /trasparente/.test(slug) });
+        const mk = document.createElement('canvas'); mk.width = 1000; mk.height = 700; MarkRender.mockup(mk, design, s.code, P, { productSlug: slug, variantColor: variant && variant.color, transparent: /trasparente/.test(slug) });
         files[`mockup_${s.code}`] = mk.toDataURL('image/png');
         files[`production_${s.code}`] = MarkRender.exportPNG(design, s.code, P, dpi);
         files[`svg_${s.code}`] = MarkRender.exportSVG(design, s.code, P, Mark.fontsCssUrl(fontsUsed()));
