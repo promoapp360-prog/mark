@@ -66,7 +66,7 @@ const Mark = (() => {
       <div><h2>Parliamone</h2><a href="tel:${esc(phone.replace(/[^+0-9]/g, ''))}">${esc(phone)}</a><a href="mailto:${esc(email)}">${esc(email)}</a>
       <a href="${company.instagram}" target="_blank" rel="noopener noreferrer">Instagram · @marksugar1987 ↗</a><a href="${company.facebook}" target="_blank" rel="noopener noreferrer">Facebook · MARK ↗</a></div>
       <div><h2>Dove siamo</h2><p><strong>Sede operativa</strong><br>${esc(company.address)}</p><p><strong>Sede legale</strong><br>${esc(company.legalAddress)}</p><a href="${company.directions}" target="_blank" rel="noopener noreferrer">Indicazioni stradali ↗</a></div>
-      <div class="footer-bottom"><span>© ${new Date().getFullYear()} ${esc(details.legal || company.legal)}</span><span>Prezzi IVA esclusa nel catalogo. IVA calcolata nel riepilogo.</span><a href="/contatti.html">Hai un progetto? Scrivici →</a></div>`;
+      <div class="footer-bottom"><span>© ${new Date().getFullYear()} ${esc(details.legal || company.legal)}</span><span>Prezzi IVA esclusa nel catalogo. IVA calcolata nel riepilogo.</span><a href="/contatti.html">Hai un progetto? Scrivici →</a><a href="/admin/" rel="nofollow">Admin</a></div>`;
     document.body.append(f);
   }
 
