@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="it">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Area clienti · MARK</title><link rel="stylesheet" href="/css/style.css"></head>
+<body>
+<div class="wrap" style="max-width:960px"><h1 style="font-size:40px;margin:30px 0 16px">Area clienti</h1><div id="out"></div></div>
+<script src="/js/common.js"></script>
+<script>
+(async () => {
+  const { qs, api, money, esc, toast, cart } = Mark; Mark.header('account');
+  const cfg = await api('/api/config'); Mark.footer(cfg.shop);
+  const PROD = { grafica_da_verificare: 'Grafica in verifica', in_produzione: 'In produzione', spedito: 'Spedito', consegnato: 'Consegnato', annullato: 'Annullato' };
+  const PAY = { in_attesa: 'Da pagare', pagato: 'Pagato', rimborsato: 'Rimborsato', annullato: 'Annullato' };
+  async function load() {
+    let acc; try { acc = await api('/api/account'); } catch { return loginForm(); }
+    const products = await api('/api/products'); const bySlug = Object.fromEntries(products.map((p) => [p.slug, p]));
+    let h = `<div class="row"><p class="grow">Ciao <b>${esc(acc.customer.name || acc.customer.email)}</b></p><button class="btn-light btn-sm" id="logout">Esci</button></div>
+      <div class="card"><h3 style="margin-top:0">I tuoi ordini</h3>`;
+    h += acc.orders.length ? acc.orders.map((o) => `<div style="padding:12px 0;border-bottom:1px solid var(--line)"><div class="row"><b class="grow">${esc(o.number)} · ${new Date(o.created_at).toLocaleDateString('it-IT')}</b>
+      <span class="pill">${esc(PAY[o.payment_status] || o.payment_status)}</span><span class="pill">${esc(PROD[o.production_status] || o.production_status)}</span><b>${money(o.total)}</b></div>
+      <div class="small muted">${o.items.map((l) => `${esc(l.productName)} · ${l.qty} ${esc(l.unitLabel)}`).join('<br>')}</div>
+      <div class="row" style="margin-top:8px"><a class="btn btn-light btn-sm" href="/ordine.html?t=${o.token}">Dettagli</a>
+      ${o.payment_status !== 'annullato' ? `<button class="btn-sm" data-reorder="${o.token}">Riordina</button>` : ''}
+      ${o.items.filter((l) => l.designId).map((l) => `<a class="btn btn-ghost btn-sm" href="/editor.html?p=${encodeURIComponent(l.productSlug)}&design=${l.designId}">Modifica e riordina</a>`).join('')}</div></div>`).join('')
+      : '<p class="muted">Nessun ordine ancora.</p>';
+    h += '</div><div class="card" style="margin-top:18px"><h3 style="margin-top:0">Progetti salvati</h3>';
+    h += acc.projects.length ? acc.projects.map((p) => `<div class="row" style="padding:8px 0;border-bottom:1px solid var(--line)"><span class="grow">${esc((bySlug[p.product_slug] || {}).name || p.product_slug)} <span class="small muted">· ${new Date(p.updated_at).toLocaleString('it-IT')}</span></span>
+      <a class="btn btn-sm" href="/editor.html?p=${encodeURIComponent(p.product_slug)}&project=${p.token}">Riprendi</a></div>`).join('') : '<p class="muted small">Salva un progetto dall\'editor mentre sei connesso per ritrovarlo qui.</p>';
+    h += '</div>';
+    qs('#out').innerHTML = h;
+    qs('#logout').onclick = async () => { await api('/api/account/logout', { body: {} }); location.reload(); };
+    qs('#out').querySelectorAll('[data-reorder]').forEach((b) => {
+      b.onclick = () => {
+        const o = acc.orders.find((x) => x.token === b.dataset.reorder);
+        o.items.forEach((l) => cart.add({ productSlug: l.productSlug, option: l.option, variant: l.variant, qty: l.qty, designId: l.designId, name: l.productName, preview: l.designId ? `/api/designs/${l.designId}/img/preview_front` : null }));
+        location.href = '/carrello.html';
+      };
+    });
+  }
+  function loginForm() {
+    qs('#out').innerHTML = `<div class="grid2"><form class="card" id="lf"><h3 style="margin-top:0">Accedi</h3><label>Email</label><input name="email" type="email" required autocomplete="email"><label>Password</label><input name="password" type="password" required autocomplete="current-password"><button style="margin-top:14px;width:100%">Accedi</button></form>
+      <form class="card" id="rf"><h3 style="margin-top:0">Crea account</h3><p class="small muted">Se hai già ordinato con questa email ritroverai i tuoi ordini.</p><label>Nome</label><input name="name"><label>Email</label><input name="email" type="email" required><label>Password (min. 8 caratteri)</label><input name="password" type="password" minlength="8" required autocomplete="new-password"><button style="margin-top:14px;width:100%">Registrati</button></form></div>`;
+    const sub = (id, url) => { qs(id).onsubmit = async (e) => { e.preventDefault(); try { await api(url, { body: Object.fromEntries(new FormData(e.target)) }); load(); } catch (err) { toast(err.message, 'err'); } }; };
+    sub('#lf', '/api/account/login'); sub('#rf', '/api/account/register');
+  }
+  load();
+})();
+</script>
+</body></html>

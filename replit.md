@@ -1,6 +1,15 @@
-# [Project name]
+# Mark sugar
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+MARK e-commerce imported from https://github.com/promoapp360-prog/mark.git. Preserve the existing Node.js, static HTML and SQLite implementation; this import is not a redesign or database migration.
+
+## Imported application
+
+- Run: `pnpm --filter @workspace/mark-sugar run dev`.
+- Original application: `artifacts/mark-sugar/mark/`; its own README documents business features and configuration.
+- Requires Node 22.5+ with `node:sqlite`. SQLite and generated files remain local development data, excluded from Git and deployment.
+- Admin login is disabled until `ADMIN_PASSWORD` is configured through Secrets. Never restore the original public default password.
+- Payments, shipping, legal content and durable production storage need configuration and review before accepting real orders. Do not publish this SQLite import as a production store without addressing durable storage.
+- Keep the existing customer's accounts and providers isolated; do not migrate storage or authentication as part of a simple import.
 
 ## Run & Operate
 

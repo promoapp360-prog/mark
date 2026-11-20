@@ -1,0 +1,23 @@
+kind = "web"
+previewPath = "/"
+title = "Mark sugar"
+description = "E-commerce MARK importato dal repository originale, con configuratore e gestionale."
+version = "1.0.0"
+id = "artifacts/mark-sugar"
+router = "path"
+
+[[services]]
+name = "web"
+paths = ["/", "/api"]
+localPort = 26257
+
+[services.development]
+run = "pnpm --filter @workspace/mark-sugar run dev"
+
+[services.production]
+build = ["pnpm", "--filter", "@workspace/mark-sugar", "run", "build"]
+run = ["node", "--experimental-sqlite", "--no-warnings", "artifacts/mark-sugar/mark/src/server.js"]
+
+[services.env]
+PORT = "26257"
+BASE_PATH = "/"
