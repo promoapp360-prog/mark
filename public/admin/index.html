@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gestionale MARK</title>
+<link rel="stylesheet" href="/css/style.css">
+<style>
+body { background: #f3efe9; }
+.adm { display: grid; grid-template-columns: 220px 1fr; min-height: 100vh; }
+.adm nav { background: var(--ink); color: #fff; padding: 18px 12px; position: sticky; top: 0; height: 100vh; overflow: auto; }
+.adm nav button { display: flex; width: 100%; justify-content: flex-start; background: none; border-radius: 10px; min-height: 40px; font-weight: 500; opacity: .8; }
+.adm nav button.on { background: #2e2a26; opacity: 1; }
+.adm main { padding: 24px; min-width: 0; }
+.adm h2 { font-size: 30px; margin: 0 0 16px; }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 16px; }
+.kpis .card b { font-size: 26px; display: block; }
+.tbl-wrap { overflow: auto; }
+.drawer { position: fixed; right: 0; top: 0; bottom: 0; width: min(760px, 100%); background: var(--paper); box-shadow: -10px 0 40px rgba(0,0,0,.2); z-index: 50; overflow: auto; padding: 22px; }
+.drawer[hidden] { display: none; }
+td input, td select { min-height: 36px; padding: 6px 8px; font-size: 13px; }
+.mini { width: 90px; }
+textarea.code { font: 12px ui-monospace, monospace; min-height: 140px; }
+@media (max-width: 800px) { .adm { grid-template-columns: 1fr; } .adm nav { height: auto; position: static; display: flex; overflow-x: auto; } .adm nav button { width: auto; white-space: nowrap; } }
+</style>
+</head>
+<body>
+<div id="login" class="wrap" style="max-width:420px;margin-top:80px" hidden>
+  <form class="card" id="lf"><span class="logo">mark</span><h3>Gestionale</h3><label>Password</label><input type="password" name="password" required autofocus><button style="width:100%;margin-top:14px">Entra</button></form>
+</div>
+<div class="adm" id="app" hidden>
+  <nav id="nav">
+    <div class="logo" style="padding:0 10px 14px">mark</div>
+    <button data-s="dash">Dashboard</button><button data-s="orders">Ordini e produzione</button><button data-s="products">Prodotti e listini</button>
+    <button data-s="templates">Template grafici</button><button data-s="fonts">Font</button><button data-s="inks">Colori di stampa</button>
+    <button data-s="shipping">Spedizioni</button><button data-s="payments">Pagamenti</button><button data-s="partners">Partner e provvigioni</button>
+    <button data-s="customers">Clienti</button><button data-s="settings">Impostazioni</button>
+    <button id="logout" style="margin-top:20px">Esci</button>
+  </nav>
+  <main id="main"></main>
+</div>
+<div class="drawer" id="drawer" hidden></div>
+<script src="/js/common.js"></script>
+<script src="/admin/admin.js"></script>
+</body>
+</html>

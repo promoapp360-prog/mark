@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Carrello e pagamento · MARK</title>
+<link rel="stylesheet" href="/css/style.css">
+<style>
+.co { display: grid; grid-template-columns: 1.3fr 1fr; gap: 22px; margin-top: 26px; align-items: start; }
+@media (max-width: 900px) { .co { grid-template-columns: 1fr; } }
+.item { display: grid; grid-template-columns: 110px 1fr; gap: 14px; padding: 14px 0; border-bottom: 1px solid var(--line); }
+.item img { width: 110px; border-radius: 8px; border: 1px solid var(--line); background: #fff; }
+.pm { display: flex; gap: 10px; align-items: flex-start; padding: 12px; border: 1px solid var(--line); border-radius: 10px; margin: 6px 0; cursor: pointer; font-weight: 400; }
+.pm:has(input:checked) { border-color: var(--ink); background: var(--cream); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1 style="font-size:40px;margin:30px 0 0">Carrello</h1>
+  <div class="co">
+    <div>
+      <div class="card"><div id="items"></div><div id="empty" hidden><p>Il carrello è vuoto.</p><a class="btn" href="/editor.html?p=bustine-extrafine">Crea la tua bustina</a></div></div>
+      <form class="card" id="form" style="margin-top:18px">
+        <h3 style="margin-top:0">Dati di fatturazione e spedizione</h3>
+        <div class="grid2">
+          <div><label>Nome e cognome *</label><input name="name" required autocomplete="name"></div>
+          <div><label>Ragione sociale / locale</label><input name="company" autocomplete="organization"></div>
+          <div><label>Email *</label><input name="email" type="email" required autocomplete="email"></div>
+          <div><label>Telefono *</label><input name="phone" required autocomplete="tel"></div>
+          <div><label>Partita IVA / Codice fiscale</label><input name="vat"></div>
+          <div><label>Codice SDI o PEC</label><input name="sdi"></div>
+        </div>
+        <label>Indirizzo di spedizione *</label><input name="address" required autocomplete="street-address">
+        <div class="grid2"><div><label>CAP *</label><input name="zip" required autocomplete="postal-code"></div><div><label>Città e provincia *</label><input name="city" required autocomplete="address-level2"></div></div>
+        <label>Note per l'ordine</label><textarea name="notes" rows="2"></textarea>
+        <label>Crea una password per l'area clienti (facoltativa, per seguire l'ordine e riordinare)</label><input name="password" type="password" minlength="8" autocomplete="new-password">
+        <h3>Metodo di pagamento</h3>
+        <div id="pms"></div>
+        <label class="row" style="font-weight:400;margin-top:14px"><input type="checkbox" name="terms" required> Accetto le condizioni di vendita e confermo di avere i diritti d'uso di loghi, marchi e immagini caricati.</label>
+      </form>
+    </div>
+    <div class="card" style="position:sticky;top:90px">
+      <h3 style="margin-top:0">Riepilogo</h3>
+      <div id="sum"></div>
+      <div id="errs"></div>
+      <button class="btn-accent" id="pay" style="width:100%;margin-top:14px" disabled>Conferma ordine e paga</button>
+      <p class="small muted">Le grafiche confermate vengono salvate con l'ordine e controllate da MARK prima della produzione.</p>
+    </div>
+  </div>
+</div>
+<script src="/js/common.js"></script>
+<script>
+(async () => {
+  const { qs, api, money, esc, toast, cart } = Mark;
+  Mark.header();
+  const cfg = await api('/api/config'); Mark.footer(cfg.shop);
+  const products = await api('/api/products'); const bySlug = Object.fromEntries(products.map((p) => [p.slug, p]));
+  let pm = (cfg.payments[0] || {}).code; let q = null;
+  qs('#pms').innerHTML = cfg.payments.length ? cfg.payments.map((m, i) => `<label class="pm"><input type="radio" name="pm" value="${m.code}" ${i ? '' : 'checked'}>
+    <span><b>${esc(m.label)}</b>${m.surchargeFixed || m.surchargePct ? `<br><span class="small muted">Supplemento ${m.surchargeFixed ? money(m.surchargeFixed) : ''}${m.surchargeFixed && m.surchargePct ? ' + ' : ''}${m.surchargePct ? `${m.surchargePct}%` : ''} + IVA</span>` : ''}
+    ${m.code === 'bonifico' ? '<br><span class="small muted">Riceverai le coordinate bancarie dopo la conferma. La produzione parte all\'accredito.</span>' : ''}</span></label>`).join('')
+    : '<div class="alert warn">Nessun metodo di pagamento attivo.</div>';
+  qs('#pms').onchange = (e) => { if (e.target.name === 'pm') { pm = e.target.value; refresh(); } };
+  try { const acc = await api('/api/account'); const f = qs('#form'); f.email.value = acc.customer.email; f.name.value = acc.customer.name || ''; f.company.value = acc.customer.company || ''; f.phone.value = acc.customer.phone || ''; f.vat.value = acc.customer.vat || ''; } catch {}
+
+  function renderItems() {
+    const items = cart.get(); qs('#empty').hidden = !!items.length;
+    qs('#items').innerHTML = items.map((it, idx) => {
+      const p = bySlug[it.productSlug] || {}; const line = q && q.lines.length === items.length ? q.lines[idx] : null;
+      return `<div class="item" data-k="${it.key}">${it.preview ? `<img src="${esc(it.preview)}" alt="">` : '<div></div>'}
+        <div><b>${esc(it.name || p.name)}</b><div class="small muted">${esc(((p.print_options || []).find((o) => o.code === it.option) || {}).label || '')}${it.variant ? ` · ${esc(((p.variants || []).find((v) => v.code === it.variant) || {}).label || '')}` : ''}</div>
+        <div class="row" style="margin-top:8px"><input type="number" value="${it.qty}" step="${p.qty_step || 1}" min="1" style="width:100px"> <span class="small muted">${esc(p.unit_label || '')}</span>
+        <span class="grow"></span>${line ? `<b>${money(line.goods + line.setup)}</b>` : ''}</div>
+        ${line ? `<div class="small muted">${money(line.unitPrice)} / ${esc(p.unit_label)}${line.setup ? ` + impianto ${money(line.setup)}` : ''}</div>` : ''}
+        <div class="row small" style="margin-top:6px">${it.designId ? `<a href="/editor.html?p=${encodeURIComponent(it.productSlug)}&design=${it.designId}&qty=${it.qty}">Modifica grafica (crea una nuova versione)</a>` : ''}<a href="#" data-rm>Rimuovi</a></div></div></div>`;
+    }).join('');
+    qs('#items').querySelectorAll('.item').forEach((el) => {
+      const k = el.dataset.k;
+      el.querySelector('input').onchange = (e) => { cart.update(k, { qty: Math.round(Number(e.target.value) || 0) }); refresh(); };
+      el.querySelector('[data-rm]').onclick = (e) => { e.preventDefault(); if (confirm('Rimuovere dal carrello?')) { cart.remove(k); refresh(); } };
+    });
+  }
+  async function refresh() {
+    const items = cart.get();
+    if (!items.length) { q = null; renderItems(); qs('#sum').innerHTML = ''; qs('#pay').disabled = true; return; }
+    try { q = await api('/api/quote', { body: { items, paymentMethod: pm } }); } catch (e) { toast(e.message, 'err'); return; }
+    renderItems();
+    const t = q.totals;
+    qs('#sum').innerHTML = `<div class="sum-row"><span>Prodotti</span><span>${money(t.goods)}</span></div><div class="sum-row"><span>Impianti stampa</span><span>${money(t.setup)}</span></div>
+      <div class="sum-row"><span>${esc(t.shippingLabel)}</span><span>${t.shipping == null ? '—' : money(t.shipping)}</span></div>
+      ${t.surcharge ? `<div class="sum-row"><span>Supplemento ${esc(t.paymentLabel)}</span><span>${money(t.surcharge)}</span></div>` : ''}
+      <div class="sum-row"><span>Imponibile</span><span>${money(t.taxable)}</span></div><div class="sum-row"><span>IVA ${t.vatRate}%</span><span>${money(t.vat)}</span></div>
+      <div class="sum-row total"><span>Totale</span><span>${money(t.total)}</span></div>`;
+    qs('#errs').innerHTML = q.errors.map((e) => `<div class="alert err small">${esc(e)}</div>`).join('');
+    qs('#pay').disabled = !!q.errors.length || !pm;
+    qs('#pay').textContent = pm === 'bonifico' ? 'Conferma ordine (bonifico)' : pm === 'contrassegno' ? 'Conferma ordine (contrassegno)' : `Conferma e paga ${money(t.total)}`;
+  }
+  qs('#pay').onclick = async () => {
+    const f = qs('#form'); if (!f.reportValidity()) return;
+    const d = Object.fromEntries(new FormData(f));
+    qs('#pay').disabled = true;
+    try {
+      const r = await api('/api/orders', { body: {
+        items: cart.get(), paymentMethod: pm, termsAccepted: !!d.terms, notes: d.notes, password: d.password || undefined,
+        customer: { name: d.name, company: d.company, email: d.email, phone: d.phone, vat: d.vat, sdi: d.sdi },
+        shipping: { name: d.company || d.name, address: d.address, zip: d.zip, city: d.city, phone: d.phone } } });
+      cart.clear();
+      if (r.redirect) location.href = r.redirect; else location.href = `/ordine.html?t=${r.token}${r.paymentError ? '&err=1' : ''}`;
+    } catch (e) { toast(e.message, 'err'); qs('#pay').disabled = false; }
+  };
+  refresh();
+})();
+</script>
+</body>
+</html>

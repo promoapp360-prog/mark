@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="it">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Il tuo ordine · MARK</title><link rel="stylesheet" href="/css/style.css"></head>
+<body>
+<div class="wrap" style="max-width:820px"><div id="out" style="margin-top:30px"></div></div>
+<script src="/js/common.js"></script>
+<script>
+(async () => {
+  const { qs, api, money, esc } = Mark; Mark.header();
+  const p = new URLSearchParams(location.search);
+  const PAY = { in_attesa: ['In attesa di pagamento', 'warn'], pagato: ['Pagato', 'ok'], rimborsato: ['Rimborsato', ''], annullato: ['Annullato', 'err'] };
+  const PROD = { grafica_da_verificare: 'Grafica in verifica', in_produzione: 'In produzione', spedito: 'Spedito', consegnato: 'Consegnato', annullato: 'Annullato' };
+  try {
+    const cfg = await api('/api/config'); Mark.footer(cfg.shop);
+    const o = await api(`/api/orders/${encodeURIComponent(p.get('t'))}`); const t = o.totals;
+    const [pl, pc] = PAY[o.payment_status] || [o.payment_status, ''];
+    let h = `<div class="card"><h1 style="margin:0;font-size:34px">Grazie, ordine ricevuto</h1><p class="muted">Ordine <b>${esc(o.number)}</b> del ${new Date(o.created_at).toLocaleDateString('it-IT')}</p>
+      <div class="row"><span class="pill ${pc}">${esc(pl)}</span><span class="pill">${esc(PROD[o.production_status] || o.production_status)}</span>${o.tracking ? `<span class="pill">Tracking: ${esc(o.tracking)}</span>` : ''}</div>`;
+    if (p.get('annullato') || p.get('err')) h += '<div class="alert warn">Il pagamento online non è stato completato. Puoi riprovare qui sotto.</div>';
+    if (o.payment_status === 'in_attesa' && (o.payment_method === 'stripe' || o.payment_method === 'paypal')) h += `<button class="btn-accent" id="retry" style="margin-top:12px">Paga ora ${money(t.total)}</button>`;
+    if (o.bank && o.payment_status === 'in_attesa') h += `<div class="alert info" style="margin-top:14px"><b>Coordinate per il bonifico</b><br>Intestatario: ${esc(o.bank.holder)}<br>IBAN: <b>${esc(o.bank.iban || 'verrà comunicato da MARK')}</b>${o.bank.bank ? `<br>Banca: ${esc(o.bank.bank)}` : ''}<br>Importo: <b>${money(t.total)}</b><br>Causale: <b>${esc(o.bank.causale)}</b><br>La produzione parte all'accredito.</div>`;
+    if (o.payment_method === 'contrassegno') h += `<div class="alert info" style="margin-top:14px">Pagherai <b>${money(t.total)}</b> al corriere alla consegna.</div>`;
+    h += '<h3>Riepilogo</h3>';
+    h += o.items.map((l) => `<div class="row" style="padding:10px 0;border-bottom:1px solid var(--line)">${l.designId ? `<img src="/api/designs/${l.designId}/img/preview_front" style="width:90px;border:1px solid var(--line);border-radius:6px" onerror="this.remove()">` : ''}
+      <div class="grow"><b>${esc(l.productName)}</b><div class="small muted">${esc(l.optionLabel)}${l.variantLabel ? ` · ${esc(l.variantLabel)}` : ''} · ${l.qty} ${esc(l.unitLabel)} × ${money(l.unitPrice)}${l.setup ? ` · impianto ${money(l.setup)}` : ''}</div></div><b>${money(l.goods + l.setup)}</b></div>`).join('');
+    h += `<div style="margin-top:12px"><div class="sum-row"><span>${esc(t.shippingLabel)}</span><span>${money(t.shipping)}</span></div>${t.surcharge ? `<div class="sum-row"><span>Supplemento ${esc(t.paymentLabel || '')}</span><span>${money(t.surcharge)}</span></div>` : ''}
+      <div class="sum-row"><span>IVA ${t.vatRate}%</span><span>${money(t.vat)}</span></div><div class="sum-row total"><span>Totale</span><span>${money(t.total)}</span></div></div>
+      <p class="small muted">Spedizione a: ${esc(o.shipping.name || '')}, ${esc(o.shipping.address)}, ${esc(o.shipping.zip)} ${esc(o.shipping.city)}</p>
+      <a class="btn btn-light" href="/account.html">Vai all'area clienti</a></div>`;
+    qs('#out').innerHTML = h;
+    const r = qs('#retry'); if (r) r.onclick = async () => { r.disabled = true; try { const j = await api(`/api/orders/${p.get('t')}/pay`, { body: {} }); location.href = j.redirect; } catch (e) { Mark.toast(e.message, 'err'); r.disabled = false; } };
+  } catch (e) { qs('#out').innerHTML = `<div class="alert err">${esc(e.message)}</div>`; }
+})();
+</script>
+</body></html>

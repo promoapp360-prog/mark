@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Crea la tua bustina · MARK</title>
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="editor-page">
+<div class="ed">
+  <aside class="ed-left">
+    <div class="tabs" id="tabs">
+      <button data-tab="tpl" class="on"><span>▦</span>Modelli</button>
+      <button data-tab="text"><span>T</span>Testo</button>
+      <button data-tab="img"><span>▣</span>Logo/Foto</button>
+      <button data-tab="deco"><span>★</span>Decori</button>
+      <button data-tab="qr"><span>⌗</span>QR</button>
+      <button data-tab="layers"><span>☰</span>Livelli</button>
+    </div>
+    <div class="panel" data-panel="tpl">
+      <p class="small muted">Parti da un modello e cambia nome, slogan, logo e colori. Oppure parti dalla bustina bianca.</p>
+      <div id="tplList"></div>
+    </div>
+    <div class="panel" data-panel="text" hidden>
+      <button id="addText" style="width:100%">+ Aggiungi testo</button>
+      <div class="row" style="margin-top:8px"><button class="btn-light btn-sm grow" id="addTitle">Titolo</button><button class="btn-light btn-sm grow" id="addSub">Slogan</button><button class="btn-light btn-sm grow" id="addMono">Monogramma</button></div>
+      <label>Font (anteprima nel carattere)</label>
+      <input id="fontSearch" placeholder="Cerca font…">
+      <div class="fontlist" id="fontList" style="margin-top:6px"></div>
+      <p class="small muted">Font Google con licenza SIL Open Font License: utilizzabili per stampa e uso commerciale.</p>
+    </div>
+    <div class="panel" data-panel="img" hidden>
+      <p class="small muted">Carica il logo del locale o una foto dalla galleria del telefono. Formati PNG, JPG, WEBP. Per la massima nitidezza usa file ad alta risoluzione.</p>
+      <label class="btn" style="display:flex;color:#fff;margin:0" for="fileIn">Carica immagine</label>
+      <input type="file" id="fileIn" accept="image/png,image/jpeg,image/webp" hidden>
+      <div id="uploads" class="icongrid" style="margin-top:10px"></div>
+    </div>
+    <div class="panel" data-panel="deco" hidden>
+      <input id="decoSearch" placeholder="Cerca: cuore, caffè, stella, matrimonio…">
+      <label>Decorazioni vettoriali</label><div class="icongrid" id="iconGrid"></div>
+      <label>Forme</label><div class="icongrid" id="shapeGrid"></div>
+      <label>Emoji e simboli</label><div class="icongrid" id="emojiGrid"></div>
+    </div>
+    <div class="panel" data-panel="qr" hidden>
+      <label for="qrIn">Link o testo del QR code</label>
+      <input id="qrIn" placeholder="https://instagram.com/illocale">
+      <button id="addQr" style="width:100%;margin-top:10px">Inserisci QR code</button>
+      <p class="small muted">Il QR viene generato in vettoriale. Mantienilo abbastanza grande: il sistema ti avvisa se rischia di non essere leggibile.</p>
+    </div>
+    <div class="panel" data-panel="layers" hidden><div class="layers" id="layerList"></div></div>
+  </aside>
+
+  <main class="ed-center">
+    <div class="toolbar">
+      <button id="undo" title="Annulla">↶</button><button id="redo" title="Ripristina">↷</button><span class="sep"></span>
+      <button id="dup" title="Duplica elemento">⧉</button><button id="del" title="Elimina">🗑</button>
+      <button id="fwd" title="Porta avanti">▲</button><button id="back" title="Porta indietro">▼</button>
+      <button id="cx" title="Centra orizzontalmente">⇔</button><button id="cy" title="Centra verticalmente">⇕</button><span class="sep"></span>
+      <button data-view="edit" class="on">Modifica</button><button data-view="mock">Mockup</button><button data-view="compare">Confronto</button><button data-view="tech">Vista tecnica</button>
+    </div>
+    <div class="stage" id="stage">
+      <canvas id="cv"></canvas>
+      <div class="sidepick" id="sidePick"></div>
+      <div class="specbar" id="specBar"></div>
+      <div class="zoomctl"><button id="zOut">−</button><button id="zFit">⤢</button><button id="zIn">+</button></div>
+    </div>
+  </main>
+
+  <aside class="ed-right">
+    <h3 id="prodName" style="margin:0 0 4px;font-size:20px"></h3>
+    <div class="small muted" id="prodDetail"></div>
+    <div id="specWarn"></div>
+    <label for="optSel">Tipo di stampa</label><select id="optSel"></select>
+    <div id="variantBox"></div>
+    <div id="inkBox"><label>Colore di stampa</label><div class="swatches" id="inkSw"></div><div class="small muted" id="inkName"></div></div>
+    <label for="qtyIn">Quantità (<span id="unitLbl"></span>)</label>
+    <input type="number" id="qtyIn" min="1">
+    <div class="small muted" id="tierInfo"></div>
+
+    <div id="props" class="props"></div>
+
+    <div class="card" style="margin-top:16px;padding:14px">
+      <strong>Riepilogo</strong>
+      <div id="summary" class="small"></div>
+    </div>
+    <div style="margin-top:12px"><strong class="small">Controllo qualità</strong><ul class="checks" id="checks" style="padding-left:18px;margin:6px 0"></ul></div>
+    <button id="confirmBtn" class="btn-accent" style="width:100%;margin-top:6px">Controlla e conferma</button>
+    <div class="row" style="margin-top:8px"><button class="btn-light btn-sm grow" id="saveBtn">Salva progetto</button><button class="btn-light btn-sm grow" id="dupProj">Duplica</button></div>
+    <div id="saveInfo" class="small muted" style="margin-top:6px"></div>
+    <button id="tplSave" class="btn-ghost btn-sm" style="width:100%;margin-top:10px" hidden>Salva come template (admin)</button>
+    <p class="small muted" style="margin-top:14px">Serve aiuto o hai una richiesta particolare? <a id="helpLink" href="#">Contatta MARK</a>.</p>
+  </aside>
+</div>
+
+<div class="mobile-bar"><div class="tot">Totale IVA inclusa<b id="mTot">—</b></div><button class="btn-accent" id="mConfirm">Conferma</button></div>
+
+<div class="modal" id="confirmModal" hidden><div>
+  <div class="row"><h2 class="grow" style="margin:0">Controllo finale della grafica</h2><button class="btn-light btn-sm" id="closeModal">Torna all'editor</button></div>
+  <p class="muted">Controlla con attenzione ogni lato: la grafica verrà prodotta esattamente così.</p>
+  <div class="views" id="finalViews"></div>
+  <div id="finalChecks"></div>
+  <div class="card" style="margin-top:12px" id="finalSummary"></div>
+  <label class="row" style="font-weight:400;margin-top:14px" id="warnAckRow" hidden><input type="checkbox" id="warnAck"> Ho letto gli avvisi e desidero procedere comunque.</label>
+  <label class="row" style="font-weight:600;margin-top:10px;align-items:flex-start"><input type="checkbox" id="confirmChk" style="margin-top:2px"> <span id="confirmTxt">Ho controllato attentamente la grafica e confermo che testi, nomi, immagini, colori e posizionamento sono corretti.</span></label>
+  <button class="btn-accent" id="addToCart" style="width:100%;margin-top:14px" disabled>Conferma e aggiungi al carrello</button>
+</div></div>
+
+<script src="/js/common.js"></script>
+<script src="/js/qr.js"></script>
+<script src="/js/icons.js"></script>
+<script src="/js/render.js"></script>
+<script src="/js/editor.js"></script>
+</body>
+</html>
