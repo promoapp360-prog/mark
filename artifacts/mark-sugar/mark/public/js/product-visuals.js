@@ -10,10 +10,12 @@
     image.src = `/images/products/${name}.webp`;
   })));
 
-  function stage(canvas) {
+  function stage(canvas, { background = '#fff' } = {}) {
     const c = canvas.getContext('2d');
     c.clearRect(0, 0, canvas.width, canvas.height);
-    c.fillStyle = '#fff'; c.fillRect(0, 0, canvas.width, canvas.height);
+    if (background !== 'transparent') {
+      c.fillStyle = background; c.fillRect(0, 0, canvas.width, canvas.height);
+    }
     const scale = Math.min(canvas.width / 640, canvas.height / 480);
     c.save(); c.translate((canvas.width - 640 * scale) / 2, (canvas.height - 480 * scale) / 2); c.scale(scale, scale);
     return c;
@@ -184,7 +186,7 @@
     c.font = '400 20px Poppins, sans-serif'; c.fillText(brown ? '1 kg' : '2,5 kg', 320, 340);
   }
   R.mockup = function (canvas, design, side, profile, opt = {}) {
-    const c = stage(canvas);
+    const c = stage(canvas, opt);
     if (profile.shape === 'cup') cup(c, design, side, profile, opt);
     else if (profile.shape === 'box') holder(c, design, side, profile, opt);
     else sachet(c, design, side, profile, opt);

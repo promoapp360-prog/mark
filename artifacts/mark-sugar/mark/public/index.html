@@ -81,7 +81,7 @@
     { type: 'text', text: 'dal 1980', font: 'Cormorant Garamond', sizePt: 8, italic: true, x: 35, y: 33 } ] } } };
   await Mark.loadFonts(['Montserrat', 'Playfair Display', 'Cormorant Garamond']);
   const hero = Mark.qs('#heroMock'); const sachet = products.find((p) => p.slug === 'bustine-extrafine');
-  const drawHero = () => sachet && MarkRender.mockup(hero, demo, 'front', sachet.profile, { tilt: -0.08 });
+  const drawHero = () => sachet && MarkRender.mockup(hero, demo, 'front', sachet.profile, { tilt: -0.08, background: 'transparent' });
   const redraws = [drawHero];
   MarkRender.setOnAsset(() => redraws.forEach((draw) => draw())); drawHero();
 
