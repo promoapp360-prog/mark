@@ -6,6 +6,7 @@ const Mark = (() => {
     phone: '+39 081 528 53 14', site: 'www.marksugar.it',
     address: 'Via Tortorelle, 200 – 80040 Poggiomarino (NA)',
     legalAddress: 'Via Publio Rutilio Rufo, 22 – 20161 Milano',
+    vat: '09909590961',
     instagram: 'https://www.instagram.com/marksugar1987/',
     facebook: 'https://www.facebook.com/MarkZuccherieDolcificanti/',
     directions: 'https://www.google.com/maps/dir/?api=1&destination=Via%20Tortorelle%20200%2C%2080040%20Poggiomarino%20NA%2C%20Italia',
@@ -60,7 +61,7 @@ const Mark = (() => {
     const email = details.email || company.email, phone = details.phone || company.phone;
     const f = document.createElement('footer'); f.className = 'site-footer';
     f.innerHTML = `<div class="footer-brand"><a class="brand" href="/" aria-label="MARK — homepage"><span class="logo">mark</span><span class="tag">Zuccheri e dolcificanti dal 1987</span></a>
-      <p>Il tuo marchio, anche nel momento più dolce della giornata.</p><p>${esc(details.legal || company.legal)}</p></div>
+      <p>Il tuo marchio, anche nel momento più dolce della giornata.</p><p>${esc(details.legal || company.legal)}<br>Partita IVA ${esc(company.vat)}</p></div>
       <div><h2>Il mondo MARK</h2><a href="/chi-siamo.html">Chi siamo</a><a href="/cosa-facciamo.html">Cosa facciamo</a><a href="/#catalogo">Il catalogo</a><a href="/contatti.html">Contatti e informazioni</a><a href="/account.html">Area clienti</a></div>
       <div><h2>Parliamone</h2><a href="tel:${esc(phone.replace(/[^+0-9]/g, ''))}">${esc(phone)}</a><a href="mailto:${esc(email)}">${esc(email)}</a>
       <a href="${company.instagram}" target="_blank" rel="noopener noreferrer">Instagram · @marksugar1987 ↗</a><a href="${company.facebook}" target="_blank" rel="noopener noreferrer">Facebook · MARK ↗</a></div>
