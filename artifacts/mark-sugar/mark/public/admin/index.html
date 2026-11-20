@@ -7,6 +7,7 @@
 <style>
 body { background: #f3efe9; }
 .adm { display: grid; grid-template-columns: 220px 1fr; min-height: 100vh; }
+.adm[hidden] { display: none; }
 .adm nav { background: var(--ink); color: #fff; padding: 18px 12px; position: sticky; top: 0; height: 100vh; overflow: auto; }
 .adm nav button { display: flex; width: 100%; justify-content: flex-start; background: none; border-radius: 10px; min-height: 40px; font-weight: 500; opacity: .8; }
 .adm nav button.on { background: #2e2a26; opacity: 1; }
@@ -24,8 +25,15 @@ textarea.code { font: 12px ui-monospace, monospace; min-height: 140px; }
 </style>
 </head>
 <body>
-<div id="login" class="wrap" style="max-width:420px;margin-top:80px" hidden>
-  <form class="card" id="lf"><span class="logo">mark</span><h3>Gestionale</h3><label>Password</label><input type="password" name="password" required autofocus><button style="width:100%;margin-top:14px">Entra</button></form>
+<div id="login" class="wrap" style="max-width:420px;margin-top:80px">
+  <form class="card" id="lf">
+    <a class="logo" href="/" aria-label="Torna al sito MARK">mark</a><h3>Gestionale</h3>
+    <p id="login-status" class="alert" role="status" aria-live="polite">Verifica dell’accesso in corso…</p>
+    <label for="admin-password">Password amministratore</label>
+    <input id="admin-password" type="password" name="password" required autocomplete="current-password" aria-describedby="login-status" disabled>
+    <button id="login-submit" style="width:100%;margin-top:14px" disabled>Entra</button>
+    <p class="small muted"><a href="/">Torna al sito</a></p>
+  </form>
 </div>
 <div class="adm" id="app" hidden>
   <nav id="nav">

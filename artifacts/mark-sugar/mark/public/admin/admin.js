@@ -13,9 +13,30 @@
   async function start() {
     const me = await api('/api/admin/me');
     qs('#login').hidden = me.admin; qs('#app').hidden = !me.admin;
+    const configured = me.configured !== false;
+    qs('#admin-password').disabled = !configured;
+    qs('#login-submit').disabled = !configured;
+    qs('#login-status').className = configured ? 'alert' : 'alert warn';
+    qs('#login-status').textContent = configured
+      ? 'Accesso riservato. Inserisci la password amministratore.'
+      : 'Accesso non ancora attivo: la password amministratore non è stata configurata. Il gestore deve impostarla nei Secrets del progetto.';
     if (me.admin) go(location.hash.slice(1) || 'dash');
   }
-  qs('#lf').onsubmit = async (e) => { e.preventDefault(); try { await api('/api/admin/login', { body: Object.fromEntries(new FormData(e.target)) }); start(); } catch (err) { toast(err.message, 'err'); } };
+  function loginError(err) {
+    qs('#app').hidden = true; qs('#login').hidden = false;
+    qs('#login-status').className = 'alert err';
+    qs('#login-status').textContent = `${err.message || 'Accesso non disponibile'}. Riprova o ricarica la pagina.`;
+  }
+  qs('#lf').onsubmit = async (e) => {
+    e.preventDefault();
+    const button = qs('#login-submit');
+    button.disabled = true; button.textContent = 'Accesso…';
+    try {
+      await api('/api/admin/login', { body: Object.fromEntries(new FormData(e.target)) });
+      await start();
+    } catch (err) { loginError(err); }
+    finally { button.disabled = qs('#admin-password').disabled; button.textContent = 'Entra'; }
+  };
   qs('#logout').onclick = async () => { await api('/api/admin/logout', { body: {} }); location.reload(); };
   qsa('#nav [data-s]').forEach((b) => { b.onclick = () => go(b.dataset.s); });
   function go(s) { location.hash = s; qsa('#nav [data-s]').forEach((b) => b.classList.toggle('on', b.dataset.s === s)); drawer.hidden = true; (SECTIONS[s] || SECTIONS.dash)().catch((e) => { main.innerHTML = `<div class="alert err">${esc(e.message)}</div>`; }); }
@@ -245,5 +266,5 @@
     render();
   }
 
-  start();
+  start().catch(loginError);
 })();

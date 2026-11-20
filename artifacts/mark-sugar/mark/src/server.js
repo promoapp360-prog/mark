@@ -297,7 +297,7 @@ route('POST', '/api/admin/login', async (req, p, u, b) => {
   return { ok: true, __cookie: cookie('mark_admin', newSession('admin', 0), 7 * 86400) };
 });
 route('POST', '/api/admin/logout', () => ({ ok: true, __cookie: cookie('mark_admin', '', 0) }));
-route('GET', '/api/admin/me', (req) => ({ admin: !!session(req, 'admin') }));
+route('GET', '/api/admin/me', (req) => ({ admin: !!session(req, 'admin'), configured: !!ADMIN_PASSWORD }));
 route('GET', '/api/admin/dashboard', (req) => {
   requireAdmin(req);
   const warnings = [];
@@ -308,7 +308,7 @@ route('GET', '/api/admin/dashboard', (req) => {
   if (pm.stripe && pm.stripe.enabled && !process.env.STRIPE_SECRET_KEY) warnings.push('Stripe attivo ma STRIPE_SECRET_KEY non impostata nei Secrets.');
   if (pm.paypal && pm.paypal.enabled && !(process.env.PAYPAL_CLIENT_ID && process.env.PAYPAL_CLIENT_SECRET)) warnings.push('PayPal attivo ma credenziali non impostate nei Secrets.');
   if (db.prepare('SELECT 1 FROM partners WHERE active=1 AND rate_first=0 AND rate_reorder=0').get()) warnings.push('Ci sono partner con percentuali di provvigione a 0%.');
-  if (!process.env.ADMIN_PASSWORD) warnings.push('Password admin provvisoria: imposta ADMIN_PASSWORD nei Secrets.');
+  if (!ADMIN_PASSWORD) warnings.push('Accesso amministratore non configurato: imposta ADMIN_PASSWORD nei Secrets.');
   if (db.prepare("SELECT 1 FROM products WHERE active=1 AND customizable=1 AND json_extract(profile,'$.specsToVerify')=1").get()) warnings.push('Alcuni prodotti hanno misure di stampa da verificare (Prodotti → profilo tecnico).');
   const noWeight = db.prepare('SELECT COUNT(*) c FROM products WHERE active=1 AND unit_weight_kg IS NULL').get().c;
   if (noWeight) warnings.push(`${noWeight} prodotti attivi senza peso per unità: il costo di spedizione per questi articoli è calcolato a 0 kg (Prodotti → peso per unità).`);
