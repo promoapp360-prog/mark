@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Contatti – MARK & Co Srl, Poggiomarino (NA) e Milano</title>
+<meta name="description" content="Contatta MARK: tel. +39 081 528 53 14, info@marksugar.it. Sede operativa a Poggiomarino (NA), sede legale a Milano.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Contatti – MARK & Co Srl">
+<meta property="og:description" content="Telefono, email e sedi di MARK, zuccheri e dolcificanti dal 1987.">
+<link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="/css/site-pages.css">
+<link rel="stylesheet" href="/css/company.css">
+</head>
+<body>
+<main class="co" id="main">
+  <section class="co-hero co-contact-hero">
+    <div class="wrap">
+      <div>
+        <p class="eyebrow">Contatti</p>
+        <h1>Parliamo del <em>tuo</em> caffè.</h1>
+        <p class="lead">Per preventivi, kit caffè, personalizzazioni o per trovare il nostro riferimento nella tua zona, chiamaci o scrivici.</p>
+        <div class="co-direct">
+          <a href="tel:+390815285314"><small>Telefono</small><strong>+39 081 528 53 14</strong></a>
+          <a href="mailto:info@marksugar.it"><small>Email</small><strong>info@marksugar.it</strong></a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="co-sec" id="dove-siamo">
+    <div class="wrap">
+      <p class="eyebrow">Dove siamo</p>
+      <h2>MARK &amp; Co Srl</h2>
+      <div class="co-offices">
+        <div class="co-office main">
+          <span class="label">Sede operativa</span>
+          <h3>Poggiomarino</h3>
+          <address>Via Tortorelle, 200<br>80040 Poggiomarino (NA)</address>
+          <a class="btn btn-accent btn-sm" href="https://www.google.com/maps/dir/?api=1&amp;destination=Via%20Tortorelle%20200%2C%2080040%20Poggiomarino%20NA" target="_blank" rel="noopener">Indicazioni stradali<span class="sr-only" style="position:absolute;left:-9999px"> (si apre in una nuova scheda)</span></a>
+        </div>
+        <div class="co-office legal">
+          <span class="label">Sede legale</span>
+          <h3>Milano</h3>
+          <address>Via Publio Rutilio Rufo, 22<br>20161 Milano</address>
+        </div>
+      </div>
+      <div class="co-map" id="map">
+        <div class="ph">
+          <strong>Mappa della sede operativa</strong>
+          <p>La mappa è fornita da Google e viene caricata solo se lo chiedi. Indirizzo: Via Tortorelle, 200 – 80040 Poggiomarino (NA).</p>
+          <button type="button" class="btn" id="loadMap">Carica la mappa</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="co-sec">
+    <div class="wrap co-enquiry">
+      <div>
+        <p class="eyebrow">Richiesta informazioni</p>
+        <h2>Scrivici due righe.</h2>
+        <p>Compila il modulo: prepareremo un'email già pronta nel tuo programma di posta, indirizzata a info@marksugar.it.</p>
+        <ol>
+          <li>Inserisci i dati e il messaggio.</li>
+          <li>Premi "Prepara l'email": si apre il tuo programma di posta.</li>
+          <li>Controlla il testo e invialo da lì.</li>
+        </ol>
+        <p class="muted small">Nessun dato viene inviato o salvato da questa pagina.</p>
+        <div class="co-social">
+          <a class="btn btn-ghost btn-sm" href="https://www.instagram.com/marksugar1987/" target="_blank" rel="noopener">Instagram</a>
+          <a class="btn btn-ghost btn-sm" href="https://www.facebook.com/MarkZuccherieDolcificanti/" target="_blank" rel="noopener">Facebook</a>
+        </div>
+      </div>
+      <form id="enq" novalidate>
+        <div class="grid2">
+          <div><label for="f-name">Nome e cognome</label><input id="f-name" name="name" autocomplete="name" required></div>
+          <div><label for="f-biz">Locale / azienda</label><input id="f-biz" name="biz" autocomplete="organization"></div>
+          <div><label for="f-city">Città</label><input id="f-city" name="city" autocomplete="address-level2"></div>
+          <div><label for="f-phone">Telefono</label><input id="f-phone" name="phone" type="tel" autocomplete="tel"></div>
+        </div>
+        <label for="f-topic">Argomento</label>
+        <select id="f-topic" name="topic">
+          <option>Bustine di zucchero personalizzate</option>
+          <option>Kit caffè 100/150 pezzi</option>
+          <option>Bicchierini, portatovaglioli, portabustine</option>
+          <option>Prodotti neutri</option>
+          <option>Diventare agente o distributore</option>
+          <option>Altro</option>
+        </select>
+        <label for="f-msg">Messaggio</label>
+        <textarea id="f-msg" name="msg" rows="5" required></textarea>
+        <p class="alert err" id="enqErr" role="alert" hidden>Inserisci almeno nome e messaggio.</p>
+        <button type="submit" class="btn-accent" style="margin-top:16px">Prepara l'email</button>
+        <p class="note">Se non si apre nulla, scrivi direttamente a <a href="mailto:info@marksugar.it">info@marksugar.it</a> o chiama il +39 081 528 53 14.</p>
+      </form>
+    </div>
+  </section>
+</main>
+<script src="/js/common.js"></script>
+<script>
+Mark.header('contatti'); Mark.footer();
+document.getElementById('loadMap').addEventListener('click', (event) => {
+  event.currentTarget.disabled = true;
+  event.currentTarget.textContent = 'Caricamento mappa…';
+  const m = document.getElementById('map');
+  const f = document.createElement('iframe');
+  f.title = 'Mappa Google: Via Tortorelle 200, Poggiomarino';
+  f.loading = 'lazy'; f.referrerPolicy = 'no-referrer-when-downgrade';
+  f.addEventListener('load', () => { m.querySelector('.ph').hidden = true; });
+  f.src = 'https://maps.google.com/maps?q=' + encodeURIComponent('Via Tortorelle 200, 80040 Poggiomarino NA') + '&output=embed';
+  m.append(f);
+});
+document.getElementById('enq').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const d = Object.fromEntries(new FormData(e.target));
+  const err = document.getElementById('enqErr');
+  if (!d.name.trim() || !d.msg.trim()) { err.hidden = false; return; }
+  err.hidden = true;
+  const body = `${d.msg}\n\n--\n${d.name}${d.biz ? '\n' + d.biz : ''}${d.city ? '\n' + d.city : ''}${d.phone ? '\nTel. ' + d.phone : ''}`;
+  location.href = `mailto:info@marksugar.it?subject=${encodeURIComponent('Richiesta: ' + d.topic)}&body=${encodeURIComponent(body)}`;
+});
+</script>
+</body>
+</html>

@@ -11,6 +11,8 @@ MARK e-commerce imported from https://github.com/promoapp360-prog/mark.git. Pres
 - Payments, shipping, legal content and durable production storage need configuration and review before accepting real orders. Do not publish this SQLite import as a production store without addressing durable storage.
 - Keep the existing customer's accounts and providers isolated; do not migrate storage or authentication as part of a simple import.
 - Product previews use the unbranded base images embedded in the customer's REAL FOOTBALL PDF; accessory shapes follow pages 4–5 of the MARK 2026 catalog. Do not turn other customers' logos from the supplied proofs into default storefront templates. Preview-only changes must not alter print measurements or production exports.
+- Corporate copy and contacts are grounded in `https://www.marksugar.it/azienda.asp`, `/contatti.asp`, and the Instagram/Facebook references on the official homepage. The operating office is distinct from the registered office. Third-party business listings disagree with the official site's registered address: ask the customer before changing it or adding unverified VAT data.
+- The contacts form opens the user's email client and does not transmit or store enquiries on the server. The embedded Google map loads only on request. Do not imply server-side email delivery or add tracking/social embeds silently.
 
 ## Run & Operate
 
